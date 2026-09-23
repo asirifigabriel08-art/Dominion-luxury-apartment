@@ -1655,20 +1655,6 @@ a { color: inherit; }
   transition: transform 0.25s ease;
 }
 .gallery-tile:hover img { transform: scale(1.04); }
-.gallery-tile span {
-  position: absolute;
-  left: 14px;
-  bottom: 14px;
-  z-index: 2;
-  display: inline-flex;
-  padding: 8px 14px;
-  border-radius: 999px;
-  background: rgba(240, 233, 220, 0.9);
-  color: var(--ink);
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  box-shadow: 0 8px 18px rgba(28, 23, 18, 0.12);
-}
 
 .lightbox {
   position: fixed;
