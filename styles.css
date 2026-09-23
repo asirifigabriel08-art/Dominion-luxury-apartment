@@ -330,7 +330,7 @@ a { color: inherit; }
   inset: 0;
   background:
     linear-gradient(135deg, rgba(18, 14, 12, 0.82), rgba(48, 35, 28, 0.72) 46%, rgba(18, 14, 12, 0.9)),
-    url('https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1700&q=80') center/cover no-repeat;
+    url('images/pool-photo-1.jpg') center/cover no-repeat;
   border-radius: 0 0 44px 44px;
   z-index: 0;
   background-size: cover;
@@ -617,6 +617,129 @@ a { color: inherit; }
   margin-bottom: 28px;
 }
 
+.stay-amenities {
+  padding: 72px 0 24px;
+}
+
+.amenities-wrap {
+  display: grid;
+  grid-template-columns: 1.08fr 0.92fr;
+  gap: 30px;
+  padding: 36px 32px;
+  border-radius: 30px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.26), rgba(233,220,196,0.42));
+  border: 1px solid rgba(72, 48, 35, 0.08);
+  box-shadow: 0 24px 48px rgba(25, 18, 13, 0.08);
+}
+
+.amenities-copy {
+  padding: 10px 8px 10px 8px;
+}
+
+.amenities-copy h2 {
+  font-size: clamp(2.1rem, 1.7rem + 1.4vw, 3rem);
+  max-width: 12ch;
+}
+
+.amenities-copy p {
+  color: var(--ink-soft);
+}
+
+.amenities-list {
+  list-style: none;
+  padding: 0;
+  margin: 22px 0 28px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 18px;
+}
+
+.amenities-list li {
+  position: relative;
+  padding-left: 28px;
+  color: var(--ink-soft);
+  font-weight: 500;
+}
+
+.amenities-list li::before {
+  content: "✓";
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: rgba(175, 122, 72, 0.14);
+  color: var(--clay-deep);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.amenities-panel {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.amenity-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 190px;
+  padding: 20px 18px 18px;
+  border-radius: 22px;
+  border: 1px solid rgba(18, 15, 13, 0.08);
+  box-shadow: 0 16px 30px rgba(17, 12, 9, 0.06);
+}
+
+.amenity-card--warm {
+  background: linear-gradient(160deg, rgba(245,234,219,0.9), rgba(230,215,191,0.8));
+}
+
+.amenity-card--dark {
+  background: linear-gradient(160deg, rgba(34,26,22,0.96), rgba(69,52,45,0.96));
+  color: var(--plaster);
+}
+
+.amenity-card--dark p,
+.amenity-card--dark h3 {
+  color: var(--plaster);
+}
+
+.amenity-card--light {
+  background: rgba(255,255,255,0.72);
+}
+
+.amenity-card--accent {
+  background: linear-gradient(160deg, rgba(188,145,104,0.22), rgba(236,214,188,0.8));
+}
+
+.amenity-number {
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--clay-deep);
+  font-weight: 700;
+}
+
+.amenity-card--dark .amenity-number {
+  color: var(--brass-light);
+}
+
+.amenity-card h3 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.amenity-card p {
+  margin: 0;
+  max-width: none;
+  color: var(--ink-soft);
+}
+
 .reveal {
   opacity: 0;
   transform: translateY(40px);
@@ -729,15 +852,15 @@ a { color: inherit; }
 }
 
 .mini-card.mood-suite {
-  background-image: url('https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=900&q=80');
+  background-image: url('images/pool-photo-1.jpg');
 }
 
 .mini-card.mood-coastal {
-  background-image: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=900&q=80');
+  background-image: url('images/pool-photo-2.jpg');
 }
 
 .mini-card.mood-private {
-  background-image: url('https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=900&q=80');
+  background-image: url('images/pool-photo-3.jpg');
 }
 
 .mini-card.accent {
