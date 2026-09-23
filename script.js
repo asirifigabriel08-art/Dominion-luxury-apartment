@@ -577,7 +577,7 @@
   }
 
   if (form && status) {
-    form.addEventListener('submit', function (event) {
+    form.addEventListener('submit', async function (event) {
       event.preventDefault();
 
       if (!form.checkValidity()) {
@@ -590,16 +590,53 @@
       }
 
       var name = document.getElementById('fullName').value.trim();
+      var email = document.getElementById('email').value.trim();
+      var phone = document.getElementById('phone').value.trim();
+      var guests = document.getElementById('guests').value.trim();
+      var roomPreference = document.getElementById('roomPreference').value.trim();
+      var message = document.getElementById('message').value.trim();
 
-      // NOTE for developer: this is a static frontend — there is no backend yet.
-      // A form submission here is a front-end inquiry flow. We redirect to a thank-you page.
-      // If you later add a backend, replace this navigation with a fetch() POST.
       if (whatsappQuickLink) {
-        whatsappQuickLink.href = 'https://wa.me/' + WHATSAPP_NUMBER + '?text=' + encodeURIComponent(DEFAULT_WHATSAPP_MESSAGE);
+        whatsappQuickLink.href = 'https://wa.me/' + WHATSAPP_NUMBER + '?text=' + encodeURIComponent(buildWhatsAppMessage());
       }
 
-      status.textContent = 'Thanks, ' + (name.split(' ')[0] || 'there') + ' — your enquiry is being prepared.';
-      window.location.href = 'thank-you.html';
+      status.textContent = 'Sending your enquiry to Dominion-Luxury Apartments...';
+
+      try {
+        var payload = new FormData();
+        payload.append('_subject', 'New booking enquiry from ' + name);
+        payload.append('_captcha', 'false');
+        payload.append('_template', 'table');
+        payload.append('name', name);
+        payload.append('email', email);
+        payload.append('phone', phone);
+        payload.append('check_in', checkIn.value || '');
+        payload.append('check_out', checkOut.value || '');
+        payload.append('guests', guests || '');
+        payload.append('room_preference', roomPreference || '');
+        payload.append('message', message || '');
+
+        var response = await fetch('https://formsubmit.co/ajax/dominionluxuryapartment@gmail.com', {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json'
+          },
+          body: payload
+        });
+
+        if (!response.ok) {
+          throw new Error('Email notification failed');
+        }
+
+        status.textContent = 'Thanks, ' + (name.split(' ')[0] || 'there') + ' — your enquiry has been sent.';
+        window.location.href = 'thank-you.html';
+      } catch (error) {
+        console.error('Booking enquiry failed:', error);
+        status.textContent = 'Your enquiry could not be sent right now, but you can still send it directly on WhatsApp.';
+        if (whatsappQuickLink) {
+          window.open(whatsappQuickLink.href, '_blank', 'noopener');
+        }
+      }
     });
   }
 })();
