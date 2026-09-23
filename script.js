@@ -41,6 +41,52 @@
     window.addEventListener('scroll', setHeaderState, { passive: true });
   }
 
+  /* ---------- Ambient 3D motion and shader glow ---------- */
+  var motionTargets = document.querySelectorAll('.hero-photo, .mini-card, .feature-card, .summary-card, .rate-card, .stat-pill, .gallery-tile, .hero-panel, .testimonial-wrap');
+
+  motionTargets.forEach(function (element) {
+    element.addEventListener('pointermove', function (event) {
+      var bounds = element.getBoundingClientRect();
+      var px = (event.clientX - bounds.left) / bounds.width;
+      var py = (event.clientY - bounds.top) / bounds.height;
+      var rotateY = (px - 0.5) * 11;
+      var rotateX = (0.5 - py) * 11;
+
+      element.style.setProperty('--rotate-y', rotateY + 'deg');
+      element.style.setProperty('--rotate-x', rotateX + 'deg');
+      element.style.background = 'radial-gradient(circle at ' + (px * 100) + '% ' + (py * 100) + '%, rgba(255,255,255,0.32), rgba(255,255,255,0.08) 24%, rgba(255,255,255,0) 60%)';
+    });
+
+    element.addEventListener('pointerleave', function () {
+      element.style.setProperty('--rotate-y', '0deg');
+      element.style.setProperty('--rotate-x', '0deg');
+      element.style.background = '';
+    });
+  });
+
+  var parallaxTargets = document.querySelectorAll('.hero-art, .hero-video-wrap, .hero-photo-stack, .hero-photo, .mini-card, .signature-layout, .feature-card, .gallery-tile');
+  var updateParallax = function () {
+    var viewportHeight = window.innerHeight;
+    parallaxTargets.forEach(function (element) {
+      var rect = element.getBoundingClientRect();
+      var progress = (viewportHeight - rect.top) / (viewportHeight + rect.height);
+      var offset = (progress - 0.5) * 24;
+      element.style.setProperty('--parallaxY', offset + 'px');
+    });
+  };
+
+  if (parallaxTargets.length) {
+    updateParallax();
+    window.addEventListener('scroll', updateParallax, { passive: true });
+  }
+
+  window.addEventListener('pointermove', function (event) {
+    var x = (event.clientX / window.innerWidth) * 100;
+    var y = (event.clientY / window.innerHeight) * 100;
+    document.body.style.setProperty('--pointer-x', x + '%');
+    document.body.style.setProperty('--pointer-y', y + '%');
+  });
+
   /* ---------- Floating WhatsApp + Call + AI assistant buttons (every page) ---------- */
   (function injectFloatingActions() {
     var wrap = document.createElement('div');
