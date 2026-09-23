@@ -49,12 +49,14 @@
       var bounds = element.getBoundingClientRect();
       var px = (event.clientX - bounds.left) / bounds.width;
       var py = (event.clientY - bounds.top) / bounds.height;
-      var rotateY = (px - 0.5) * 11;
-      var rotateX = (0.5 - py) * 11;
+      var rotateY = (px - 0.5) * 13;
+      var rotateX = (0.5 - py) * 13;
 
       element.style.setProperty('--rotate-y', rotateY + 'deg');
       element.style.setProperty('--rotate-x', rotateX + 'deg');
-      element.style.background = 'radial-gradient(circle at ' + (px * 100) + '% ' + (py * 100) + '%, rgba(255,255,255,0.32), rgba(255,255,255,0.08) 24%, rgba(255,255,255,0) 60%)';
+      element.style.setProperty('--glow-x', (px * 100) + '%');
+      element.style.setProperty('--glow-y', (py * 100) + '%');
+      element.style.background = 'radial-gradient(circle at ' + (px * 100) + '% ' + (py * 100) + '%, rgba(255,255,255,0.38), rgba(255,255,255,0.08) 24%, rgba(255,255,255,0) 60%)';
     });
 
     element.addEventListener('pointerleave', function () {
@@ -70,7 +72,7 @@
     parallaxTargets.forEach(function (element) {
       var rect = element.getBoundingClientRect();
       var progress = (viewportHeight - rect.top) / (viewportHeight + rect.height);
-      var offset = (progress - 0.5) * 24;
+      var offset = (progress - 0.5) * 30;
       element.style.setProperty('--parallaxY', offset + 'px');
     });
   };
@@ -85,6 +87,8 @@
     var y = (event.clientY / window.innerHeight) * 100;
     document.body.style.setProperty('--pointer-x', x + '%');
     document.body.style.setProperty('--pointer-y', y + '%');
+    document.body.style.setProperty('--scene-tilt-y', ((x - 50) / 18).toFixed(2) + 'deg');
+    document.body.style.setProperty('--scene-tilt-x', ((50 - y) / 22).toFixed(2) + 'deg');
   });
 
   /* ---------- Floating WhatsApp + Call + AI assistant buttons (every page) ---------- */
@@ -502,12 +506,30 @@
     });
   });
 
-  /* ---------- Gallery lightbox (apartments.html) ---------- */
+  /* ---------- Gallery slider + lightbox (apartments.html) ---------- */
   var galleryGrid = document.getElementById('galleryGrid');
   var lightbox = document.getElementById('lightbox');
   var lightboxImage = document.getElementById('lightboxImage');
   var lightboxCaption = document.getElementById('lightboxCaption');
   var lightboxClose = document.getElementById('lightboxClose');
+
+  if (galleryGrid) {
+    var galleryTiles = galleryGrid.querySelectorAll('.gallery-tile');
+    var galleryPrev = document.querySelector('.gallery-arrow-prev');
+    var galleryNext = document.querySelector('.gallery-arrow-next');
+
+    if (galleryPrev && galleryNext) {
+      galleryPrev.addEventListener('click', function () {
+        var cardWidth = galleryTiles.length ? galleryTiles[0].getBoundingClientRect().width + 18 : 320;
+        galleryGrid.scrollBy({ left: -cardWidth, behavior: 'smooth' });
+      });
+
+      galleryNext.addEventListener('click', function () {
+        var cardWidth = galleryTiles.length ? galleryTiles[0].getBoundingClientRect().width + 18 : 320;
+        galleryGrid.scrollBy({ left: cardWidth, behavior: 'smooth' });
+      });
+    }
+  }
 
   if (galleryGrid && lightbox && lightboxImage && lightboxCaption && lightboxClose) {
     galleryGrid.querySelectorAll('.gallery-tile').forEach(function (tile) {
