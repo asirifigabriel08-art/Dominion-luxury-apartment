@@ -518,15 +518,37 @@
     var galleryPrev = document.querySelector('.gallery-arrow-prev');
     var galleryNext = document.querySelector('.gallery-arrow-next');
 
+    if (galleryTiles.length > 1) {
+      galleryTiles.forEach(function (tile) {
+        var clone = tile.cloneNode(true);
+        clone.setAttribute('aria-hidden', 'true');
+        galleryGrid.appendChild(clone);
+      });
+      galleryGrid.classList.add('is-marquee');
+      galleryGrid.addEventListener('pointerenter', function () {
+        galleryGrid.classList.add('is-paused');
+      });
+      galleryGrid.addEventListener('pointerleave', function () {
+        galleryGrid.classList.remove('is-paused');
+      });
+    }
+
     if (galleryPrev && galleryNext) {
       galleryPrev.addEventListener('click', function () {
-        var cardWidth = galleryTiles.length ? galleryTiles[0].getBoundingClientRect().width + 18 : 320;
-        galleryGrid.scrollBy({ left: -cardWidth, behavior: 'smooth' });
+        galleryGrid.classList.add('is-paused');
+        galleryGrid.style.animationDirection = 'reverse';
+        setTimeout(function () {
+          galleryGrid.style.animationDirection = 'normal';
+          galleryGrid.classList.remove('is-paused');
+        }, 420);
       });
 
       galleryNext.addEventListener('click', function () {
-        var cardWidth = galleryTiles.length ? galleryTiles[0].getBoundingClientRect().width + 18 : 320;
-        galleryGrid.scrollBy({ left: cardWidth, behavior: 'smooth' });
+        galleryGrid.classList.add('is-paused');
+        galleryGrid.style.animationDirection = 'normal';
+        setTimeout(function () {
+          galleryGrid.classList.remove('is-paused');
+        }, 420);
       });
     }
   }
@@ -534,6 +556,14 @@
   if (galleryGrid && lightbox && lightboxImage && lightboxCaption && lightboxClose) {
     galleryGrid.querySelectorAll('.gallery-tile').forEach(function (tile) {
       tile.addEventListener('click', function () {
+        tile.classList.remove('is-zooming');
+        void tile.offsetWidth;
+        tile.classList.add('is-zooming');
+
+        setTimeout(function () {
+          tile.classList.remove('is-zooming');
+        }, 850);
+
         var imgSrc = tile.getAttribute('data-image') || tile.querySelector('img')?.getAttribute('src') || '';
         lightboxImage.src = imgSrc;
         lightboxImage.alt = tile.querySelector('img')?.getAttribute('alt') || 'Apartment photo';
