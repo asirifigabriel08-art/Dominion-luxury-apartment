@@ -45,6 +45,12 @@
   var motionTargets = document.querySelectorAll('.hero-photo, .mini-card, .feature-card, .summary-card, .rate-card, .stat-pill, .gallery-tile, .hero-panel, .testimonial-wrap');
 
   motionTargets.forEach(function (element) {
+    // Cards that display a photo via CSS background-image (the signature "mood"
+    // cards) must keep it: the inline `background` shorthand below would wipe the
+    // image and leave the card blank while the pointer is over it. Those cards
+    // still get the 3D tilt, just not the pointer glow.
+    var hasBackgroundPhoto = /url\(/i.test(getComputedStyle(element).backgroundImage || '');
+
     element.addEventListener('pointermove', function (event) {
       var bounds = element.getBoundingClientRect();
       var px = (event.clientX - bounds.left) / bounds.width;
@@ -56,12 +62,18 @@
       element.style.setProperty('--rotate-x', rotateX + 'deg');
       element.style.setProperty('--glow-x', (px * 100) + '%');
       element.style.setProperty('--glow-y', (py * 100) + '%');
+
+      if (hasBackgroundPhoto) return;
+
       element.style.background = 'radial-gradient(circle at ' + (px * 100) + '% ' + (py * 100) + '%, rgba(255,255,255,0.38), rgba(255,255,255,0.08) 24%, rgba(255,255,255,0) 60%)';
     });
 
     element.addEventListener('pointerleave', function () {
       element.style.setProperty('--rotate-y', '0deg');
       element.style.setProperty('--rotate-x', '0deg');
+
+      if (hasBackgroundPhoto) return;
+
       element.style.background = '';
     });
   });
