@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://www.dominionluxuryapartments.com/sitemap.xml
+Sitemap: https://dominionluxuryapartment.com/sitemap.xml

@@ -16,18 +16,31 @@
   var nav = document.getElementById('mainNav');
 
   if (toggle && nav) {
+    var closeNav = function () {
+      nav.classList.remove('is-open');
+      toggle.setAttribute('aria-expanded', 'false');
+      toggle.setAttribute('aria-label', 'Open menu');
+    };
+
     toggle.addEventListener('click', function () {
       var isOpen = nav.classList.toggle('is-open');
       toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
       toggle.setAttribute('aria-label', isOpen ? 'Close menu' : 'Open menu');
+      if (isOpen) {
+        var firstLink = nav.querySelector('a');
+        if (firstLink) firstLink.focus();
+      }
     });
 
     nav.querySelectorAll('a').forEach(function (link) {
-      link.addEventListener('click', function () {
-        nav.classList.remove('is-open');
-        toggle.setAttribute('aria-expanded', 'false');
-        toggle.setAttribute('aria-label', 'Open menu');
-      });
+      link.addEventListener('click', closeNav);
+    });
+
+    document.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape' && nav.classList.contains('is-open')) {
+        closeNav();
+        toggle.focus();
+      }
     });
   }
 
@@ -103,7 +116,7 @@
     document.body.style.setProperty('--scene-tilt-x', ((50 - y) / 22).toFixed(2) + 'deg');
   });
 
-  /* ---------- Floating WhatsApp + Call + AI assistant buttons (every page) ---------- */
+  /* ---------- Floating WhatsApp + Call + automated concierge buttons (every page) ---------- */
   (function injectFloatingActions() {
     var wrap = document.createElement('div');
     wrap.className = 'floating-actions';
@@ -125,7 +138,7 @@
     var aiButton = document.createElement('button');
     aiButton.type = 'button';
     aiButton.className = 'floating-btn floating-btn--assistant';
-    aiButton.setAttribute('aria-label', 'Open Dominion AI concierge');
+    aiButton.setAttribute('aria-label', 'Open automated guest concierge');
     aiButton.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18h6M10 15a2 2 0 0 1 4 0v1H10v-1Zm-3-7a5 5 0 1 1 10 0v2.2A3 3 0 0 1 17 13.5V15H7v-1.5a3 3 0 0 1 1-2.3V8Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
     wrap.appendChild(waLink);
@@ -139,20 +152,20 @@
     aiPanel.innerHTML = [
       '<div class="ai-chat-panel__header">',
       '  <div>',
-      '    <span class="ai-chat-panel__eyebrow">Dominion AI</span>',
+      '    <span class="ai-chat-panel__eyebrow">Automated guest help</span>',
       '    <strong>Concierge</strong>',
       '  </div>',
-      '  <button type="button" class="ai-chat-panel__close" aria-label="Close AI concierge">×</button>',
+      '  <button type="button" class="ai-chat-panel__close" aria-label="Close guest concierge">×</button>',
       '</div>',
       '<div class="ai-chat-panel__messages" id="aiChatMessages"></div>',
       '<div class="ai-chat-panel__quick-replies">',
       '  <button type="button" class="ai-quick-reply">Check availability</button>',
       '  <button type="button" class="ai-quick-reply">Room information</button>',
       '  <button type="button" class="ai-quick-reply">Talk to customer care</button>',
-      '  <button type="button" class="ai-quick-reply">Leave a review</button>',
+      '  <button type="button" class="ai-quick-reply">Read or leave a review</button>',
       '</div>',
       '<div class="ai-chat-panel__composer">',
-      '  <input id="aiChatInput" type="text" placeholder="Type your name or ask a question..." aria-label="Ask the Dominion AI assistant">',
+      '  <input id="aiChatInput" type="text" placeholder="Ask a question..." aria-label="Ask the website concierge">',
       '  <button id="aiChatSend" type="button" aria-label="Send message">Send</button>',
       '</div>'
     ].join('');
@@ -163,7 +176,7 @@
     var aiChatInput = document.getElementById('aiChatInput');
     var aiChatSend = document.getElementById('aiChatSend');
     var aiChatClose = aiPanel.querySelector('.ai-chat-panel__close');
-    var PROFILE_KEY = 'dominionAiProfile';
+    var GOOGLE_REVIEW_URL = 'https://www.google.com/maps/search/?api=1&query=5.644609640587883%2C-0.043361395659025616';
 
     function appendMessage(role, text) {
       var message = document.createElement('div');
@@ -195,35 +208,14 @@
       return 'Good evening';
     }
 
-    function readProfile() {
-      try {
-        var stored = localStorage.getItem(PROFILE_KEY);
-        return stored ? JSON.parse(stored) : {};
-      } catch (error) {
-        return {};
-      }
-    }
-
-    function saveProfile(profile) {
-      try {
-        localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
-      } catch (error) {}
-    }
-
-    function getCurrentName() {
-      var profile = readProfile();
-      return profile && profile.name ? profile.name : '';
-    }
-
-    function getAiReply(question, visitorName) {
+    function getConciergeReply(question) {
       var q = (question || '').toLowerCase();
-      var name = visitorName || 'there';
 
       if (/(customer care|customer service|human|agent|support team|talk to someone|connect me|customer support)/.test(q)) {
         return 'I can connect you to our customer care team right away. You can continue in WhatsApp or speak with the team directly by phone.';
       }
       if (/(availability|available|dates|check in|check-in|checkin|book|booking|reserve)/.test(q)) {
-        return 'To check availability, send your dates and guest count. The team will confirm the best room option and next steps for you, ' + name + '.';
+        return 'To check availability, send your dates and guest count. The team will confirm the best room option and next steps.';
       }
       if (/(room|apartment|suite|studio|private|living|bedroom|space|house)/.test(q)) {
         return 'Dominion-Luxury Apartments offers a private, comfortable homestay experience with a boutique-luxury feel. The team can confirm the best room fit for your dates and preferences.';
@@ -235,10 +227,10 @@
         return 'Dominion-Luxury Apartments is located in Sakumono, a coastal community in Ghana’s Tema Metropolitan District, close to the lagoon and beach area.';
       }
       if (/(hello|hi|hey|good morning|good afternoon|good evening)/.test(q)) {
-        return getTimeGreeting() + ', ' + name + '! I can help with availability, room information, location, and direct support.';
+        return getTimeGreeting() + '! I can help with availability, room information, location, and direct support.';
       }
       if (/(thank you|thanks)/.test(q)) {
-        return 'You’re welcome, ' + name + '. I can continue helping with your stay, availability, or customer care connection.';
+        return 'You’re welcome. I can continue helping with your stay, availability, or customer care connection.';
       }
       if (/(wifi|parking|security|clean|cleaning|amenities|family|couple|group)/.test(q)) {
         return 'The stay is designed to feel private, practical, and relaxed. For exact amenities or guest capacity, the property team can confirm the best option for your request.';
@@ -248,104 +240,7 @@
     }
 
     function renderWelcomeMessage() {
-      var profile = readProfile();
-      var currentName = profile.name || '';
-
-      if (currentName) {
-        appendMessage('bot', getTimeGreeting() + ', ' + currentName + '! I’m here to help with availability, room details, and direct customer support. What service do you need today?');
-      } else {
-        appendMessage('bot', 'Hi there! I’m here to help. Before I assist you, what is your name?');
-      }
-    }
-
-    var reviewModal = document.createElement('div');
-    reviewModal.className = 'review-modal';
-    reviewModal.id = 'reviewModal';
-    reviewModal.hidden = true;
-    reviewModal.innerHTML = [
-      '<div class="review-modal__card" role="dialog" aria-modal="true" aria-labelledby="reviewModalTitle">',
-      '  <div class="review-modal__header">',
-      '    <h3 id="reviewModalTitle" class="review-modal__title">Leave a review</h3>',
-      '    <button type="button" class="review-modal__close" aria-label="Close review form">×</button>',
-      '  </div>',
-      '  <form class="review-form" id="reviewForm">',
-      '    <div class="review-stars" aria-label="Rating">',
-      '      <button type="button" class="review-star" data-value="1" aria-label="1 star">★</button>',
-      '      <button type="button" class="review-star" data-value="2" aria-label="2 stars">★</button>',
-      '      <button type="button" class="review-star" data-value="3" aria-label="3 stars">★</button>',
-      '      <button type="button" class="review-star" data-value="4" aria-label="4 stars">★</button>',
-      '      <button type="button" class="review-star" data-value="5" aria-label="5 stars">★</button>',
-      '    </div>',
-      '    <label for="reviewComment">Your comment</label>',
-      '    <textarea id="reviewComment" placeholder="Tell us how we did..."></textarea>',
-      '    <div class="review-actions">',
-      '      <button type="button" class="review-cancel">Maybe later</button>',
-      '      <button type="submit" class="review-submit">Send review</button>',
-      '    </div>',
-      '  </form>',
-      '</div>'
-    ].join('');
-    document.body.appendChild(reviewModal);
-
-    var reviewForm = document.getElementById('reviewForm');
-    var reviewStars = reviewModal.querySelectorAll('.review-star');
-    var reviewComment = document.getElementById('reviewComment');
-    var reviewClose = reviewModal.querySelector('.review-modal__close');
-    var reviewCancel = reviewModal.querySelector('.review-cancel');
-    var selectedRating = 0;
-
-    function setRating(value) {
-      selectedRating = value;
-      reviewStars.forEach(function (star) {
-        star.classList.toggle('is-active', Number(star.dataset.value) <= value);
-      });
-    }
-
-    reviewStars.forEach(function (star) {
-      star.addEventListener('click', function () {
-        setRating(Number(star.dataset.value));
-      });
-    });
-
-    reviewClose.addEventListener('click', closeReviewModal);
-    reviewCancel.addEventListener('click', closeReviewModal);
-    reviewModal.addEventListener('click', function (event) {
-      if (event.target === reviewModal) closeReviewModal();
-    });
-
-    if (reviewForm) {
-      reviewForm.addEventListener('submit', function (event) {
-        event.preventDefault();
-
-        var name = getCurrentName() || 'Guest';
-        var comment = reviewComment.value.trim() || 'No comment provided.';
-        var ratingText = selectedRating ? selectedRating + ' star' + (selectedRating > 1 ? 's' : '') : 'No rating';
-
-        appendMessage('bot', 'Thank you, ' + name + '. Your review has been received with ' + ratingText + '.');
-        appendMessage('bot', 'We appreciate your feedback and value your experience with us.');
-        closeReviewModal();
-        reviewForm.reset();
-        selectedRating = 0;
-        setRating(0);
-      });
-    }
-
-    function promptForReview(name) {
-      appendMessage('bot', 'Thank you for speaking with us, ' + name + '. Would you be willing to leave a quick review about your experience?');
-      appendMessage('bot', 'A quick review helps us improve and helps future guests feel confident booking with us.');
-      openReviewModal();
-    }
-
-    function openReviewModal() {
-      var modal = document.getElementById('reviewModal');
-      if (!modal) return;
-      modal.hidden = false;
-    }
-
-    function closeReviewModal() {
-      var modal = document.getElementById('reviewModal');
-      if (!modal) return;
-      modal.hidden = true;
+      appendMessage('bot', 'This automated concierge offers scripted guidance about availability, rooms, rates, and location. For confirmed details, please contact the property team.');
     }
 
     function handleAiMessage(rawText) {
@@ -353,49 +248,21 @@
       if (!text) return;
 
       appendMessage('user', text);
-
-      var profile = readProfile();
-      var currentName = profile.name || '';
       var lowerText = text.toLowerCase();
 
-      if (!currentName) {
-        var name = text.replace(/\s+/g, ' ').trim();
-        if (name.length < 2) {
-          typeBotReply('Please type your full name so I can greet you properly.', 1200);
-          return;
-        }
-
-        profile.name = name;
-        saveProfile(profile);
-
-        typeBotReply(getTimeGreeting() + ', ' + name + '! I’m here to help with availability, room information, and customer support. What service do you need today?', 1500);
-        return;
-      }
-
       if (/(leave a review|review)/.test(lowerText)) {
-        typeBotReply('Thank you for helping us improve. Please share your experience and we will continue to serve you better.', 1500);
-        window.open('https://wa.me/' + WHATSAPP_NUMBER + '?text=' + encodeURIComponent('Hello Dominion-Luxury Apartments, I would like to leave a review about my experience.'), '_blank', 'noopener');
+        typeBotReply('This chat does not collect or submit reviews. Search Google Maps for the property to find its listing and any public guest feedback.', 1200);
+        window.open(GOOGLE_REVIEW_URL, '_blank', 'noopener');
         return;
       }
 
       if (/(customer care|customer service|human|agent|support team|talk to someone|connect me|customer support)/.test(lowerText)) {
-        typeBotReply('Absolutely — I can connect you directly to our customer care team. You can continue on WhatsApp or call the team now.', 1800);
-        setTimeout(function () {
-          appendMessage('bot', 'Opening WhatsApp to our support line now.');
-          window.open('https://wa.me/' + WHATSAPP_NUMBER + '?text=' + encodeURIComponent('Hello Dominion-Luxury Apartments, I would like to speak to the customer care team.'), '_blank', 'noopener');
-          promptForReview(currentName);
-        }, 1800);
+        typeBotReply('I can connect you directly to our customer care team on WhatsApp.', 1200);
+        window.open('https://wa.me/' + WHATSAPP_NUMBER + '?text=' + encodeURIComponent('Hello Dominion-Luxury Apartments, I would like to speak to the customer care team.'), '_blank', 'noopener');
         return;
       }
 
-      if (/(check availability|availability|dates|stay|book|booking|reserve)/.test(lowerText) || /(room|suite|apartment|bedroom|private)/.test(lowerText) || /(price|rate|pricing|cost|how much)/.test(lowerText) || /(location|where|sakumono|beach|lagoon)/.test(lowerText) || /(contact|support|question)/.test(lowerText)) {
-        typeBotReply(getAiReply(text, currentName), 1800);
-        setTimeout(function () { promptForReview(currentName); }, 2200);
-        return;
-      }
-
-      typeBotReply(getAiReply(text, currentName), 1800);
-      setTimeout(function () { promptForReview(currentName); }, 2200);
+      typeBotReply(getConciergeReply(text), 1200);
     }
 
     function toggleAiPanel(forceOpen) {
@@ -464,36 +331,6 @@
     });
   }
 
-  /* ---------- Testimonial slider (home) ---------- */
-  var testimonialItems = document.querySelectorAll('.testimonial');
-  var prevBtn = document.querySelector('.slider-btn-prev');
-  var nextBtn = document.querySelector('.slider-btn-next');
-
-  if (testimonialItems.length && prevBtn && nextBtn) {
-    var currentIndex = 0;
-    var showTestimonial = function (index) {
-      testimonialItems.forEach(function (item, itemIndex) {
-        var isActive = itemIndex === index;
-        item.classList.toggle('is-active', isActive);
-      });
-    };
-
-    prevBtn.addEventListener('click', function () {
-      currentIndex = (currentIndex - 1 + testimonialItems.length) % testimonialItems.length;
-      showTestimonial(currentIndex);
-    });
-
-    nextBtn.addEventListener('click', function () {
-      currentIndex = (currentIndex + 1) % testimonialItems.length;
-      showTestimonial(currentIndex);
-    });
-
-    setInterval(function () {
-      currentIndex = (currentIndex + 1) % testimonialItems.length;
-      showTestimonial(currentIndex);
-    }, 5000);
-  }
-
   /* ---------- FAQ accordion ---------- */
   var faqItems = document.querySelectorAll('.faq-item');
   faqItems.forEach(function (faqItem) {
@@ -530,10 +367,16 @@
     var galleryPrev = document.querySelector('.gallery-arrow-prev');
     var galleryNext = document.querySelector('.gallery-arrow-next');
 
-    if (galleryTiles.length > 1) {
+    var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (galleryTiles.length > 1 && !reduceMotion) {
       galleryTiles.forEach(function (tile) {
         var clone = tile.cloneNode(true);
         clone.setAttribute('aria-hidden', 'true');
+        clone.tabIndex = -1;
+        clone.disabled = true;
+        var cloneImage = clone.querySelector('img');
+        if (cloneImage) cloneImage.alt = '';
         galleryGrid.appendChild(clone);
       });
       galleryGrid.classList.add('is-marquee');
@@ -566,6 +409,7 @@
   }
 
   if (galleryGrid && lightbox && lightboxImage && lightboxCaption && lightboxClose) {
+    var lastFocusedGalleryTile = null;
     galleryGrid.querySelectorAll('.gallery-tile').forEach(function (tile) {
       tile.addEventListener('click', function () {
         tile.classList.remove('is-zooming');
@@ -576,21 +420,32 @@
           tile.classList.remove('is-zooming');
         }, 850);
 
-        var imgSrc = tile.getAttribute('data-image') || tile.querySelector('img')?.getAttribute('src') || '';
+        var tileImage = tile.querySelector('img');
+        var imgSrc = tile.getAttribute('data-image') || (tileImage ? tileImage.getAttribute('src') : '') || '';
         lightboxImage.src = imgSrc;
-        lightboxImage.alt = tile.querySelector('img')?.getAttribute('alt') || 'Apartment photo';
+        lightboxImage.alt = (tileImage ? tileImage.getAttribute('alt') : '') || 'Apartment photo';
         lightboxCaption.textContent = tile.getAttribute('data-caption') || '';
+        lastFocusedGalleryTile = tile;
         lightbox.hidden = false;
+        lightboxClose.focus();
       });
     });
 
-    var closeLightbox = function () { lightbox.hidden = true; };
+    var closeLightbox = function () {
+      lightbox.hidden = true;
+      lightboxImage.removeAttribute('src');
+      if (lastFocusedGalleryTile) lastFocusedGalleryTile.focus();
+    };
     lightboxClose.addEventListener('click', closeLightbox);
     lightbox.addEventListener('click', function (event) {
       if (event.target === lightbox) closeLightbox();
     });
     document.addEventListener('keydown', function (event) {
       if (event.key === 'Escape' && !lightbox.hidden) closeLightbox();
+      if (event.key === 'Tab' && !lightbox.hidden) {
+        event.preventDefault();
+        lightboxClose.focus();
+      }
     });
   }
 
@@ -601,15 +456,23 @@
   var checkOut = document.getElementById('checkOut');
   var whatsappQuickLink = document.getElementById('whatsappQuickLink');
 
+  var formatLocalDate = function (date) {
+    var month = String(date.getMonth() + 1).padStart(2, '0');
+    var day = String(date.getDate()).padStart(2, '0');
+    return date.getFullYear() + '-' + month + '-' + day;
+  };
+
   if (checkIn && checkOut) {
-    var todayISO = new Date().toISOString().slice(0, 10);
+    var today = new Date();
+    today.setHours(0, 0, 0, 0);
+    var todayISO = formatLocalDate(today);
     checkIn.min = todayISO;
 
     var syncCheckoutMin = function () {
       if (!checkIn.value) return;
-      var nextDay = new Date(checkIn.value);
+      var nextDay = new Date(checkIn.value + 'T00:00:00');
       nextDay.setDate(nextDay.getDate() + 1);
-      var minOut = nextDay.toISOString().slice(0, 10);
+      var minOut = formatLocalDate(nextDay);
       checkOut.min = minOut;
       if (checkOut.value && checkOut.value < minOut) checkOut.value = minOut;
     };
@@ -641,15 +504,20 @@
   }
 
   if (form && status) {
+    var isSubmitting = false;
     form.addEventListener('submit', async function (event) {
       event.preventDefault();
+      if (isSubmitting) return;
 
       if (!form.checkValidity()) {
         status.textContent = 'Please fill in your name, email, phone, and dates.';
+        var firstInvalidField = form.querySelector(':invalid');
+        if (firstInvalidField) firstInvalidField.focus();
         return;
       }
       if (checkIn.value && checkOut.value && checkOut.value <= checkIn.value) {
         status.textContent = 'Check-out needs to be after check-in.';
+        checkOut.focus();
         return;
       }
 
@@ -660,16 +528,29 @@
       var roomPreference = document.getElementById('roomPreference').value.trim();
       var message = document.getElementById('message').value.trim();
 
+      if (!name) {
+        status.textContent = 'Please enter your name.';
+        document.getElementById('fullName').focus();
+        return;
+      }
+      if (!phone) {
+        status.textContent = 'Please enter your phone number.';
+        document.getElementById('phone').focus();
+        return;
+      }
+
       if (whatsappQuickLink) {
         whatsappQuickLink.href = 'https://wa.me/' + WHATSAPP_NUMBER + '?text=' + encodeURIComponent(buildWhatsAppMessage());
       }
 
+      isSubmitting = true;
+      var submitButton = form.querySelector('button[type="submit"]');
+      if (submitButton) submitButton.disabled = true;
       status.textContent = 'Sending your enquiry to Dominion-Luxury Apartments...';
 
       try {
         var payload = new FormData();
         payload.append('_subject', 'New booking enquiry from ' + name);
-        payload.append('_captcha', 'false');
         payload.append('_template', 'table');
         payload.append('name', name);
         payload.append('email', email);
@@ -692,14 +573,18 @@
           throw new Error('Email notification failed');
         }
 
+        var result = await response.json();
+        if (!result || (result.success !== true && result.success !== 'true')) {
+          throw new Error(result && result.message ? result.message : 'Email notification failed');
+        }
+
         status.textContent = 'Thanks, ' + (name.split(' ')[0] || 'there') + ' — your enquiry has been sent.';
         window.location.href = 'thank-you.html';
       } catch (error) {
         console.error('Booking enquiry failed:', error);
-        status.textContent = 'Your enquiry could not be sent right now, but you can still send it directly on WhatsApp.';
-        if (whatsappQuickLink) {
-          window.open(whatsappQuickLink.href, '_blank', 'noopener');
-        }
+        isSubmitting = false;
+        if (submitButton) submitButton.disabled = false;
+        status.textContent = 'Your enquiry could not be sent right now. Please use the WhatsApp button to contact the property directly.';
       }
     });
   }
